@@ -1,0 +1,101 @@
+import tkinter as tk
+import requests
+import time
+from threading import Thread
+import sys
+import os
+from tkinter import messagebox
+
+class ANSIColors:
+    RED = '\033[91m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    END = '\033[0m'
+
+
+def check_website(url):
+    try:
+        response = requests.get(url, timeout=5)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def connect_to_campus_network():
+
+    # 登录信息
+    payload = {
+       #这里输入post负载
+    }
+
+    # 请求URL
+    login_url = "这里输入请求url"
+    print("校园网自动连接程序v3.0稳定版本")
+    print("初始化成功！")
+    # 尝试登录，重复2次
+    for attempt in range(2):
+        try:
+            response = requests.post(login_url, data=payload, timeout=10)
+            if response.status_code == 200:
+                print(ANSIColors.GREEN + f"验证 {attempt + 1}: 校园网登录成功。" + ANSIColors.END)
+            else:
+                print(
+                    ANSIColors.RED + f"验证 {attempt + 1}: 校园网登录失败，状态码：{response.status_code}" + ANSIColors.END)
+        except requests.RequestException as e:
+            print(ANSIColors.RED + f"验证 {attempt + 1}: 网络连接错误: {e}" + ANSIColors.END)
+        time.sleep(2)  # 等待2秒后再次尝试
+
+        # 检查网络连通性
+        if check_website('http://www.baidu.com'):
+            print(ANSIColors.GREEN + "互联网连接成功！" + ANSIColors.END)
+        else:
+            print(ANSIColors.RED + "无法连接到互联网！" + ANSIColors.END)
+
+        if check_website('http://www.google.com'):
+            print(ANSIColors.GREEN + "大世界连接成功！" + ANSIColors.END)
+        else:
+            print(ANSIColors.RED + "无法连接到大世界，请检查代理！" + ANSIColors.END)
+
+    print("程序将在1秒后自动退出！你也可以手动关闭此窗口")
+
+
+    time.sleep(1)  # 模拟连接过程
+    success = check_website('http://www.baidu.com')  # 模拟验证过程
+    if success:
+        messagebox.showinfo("连接成功", "校园网登录成功！")
+    else:
+        messagebox.showerror("连接失败", "校园网登录失败！")
+
+
+def on_connect_button_click():
+    connect_button.config(state='disabled')
+    Thread(target=connect_to_campus_network).start()
+
+
+def on_exit_button_click():
+    root.destroy()
+
+# 获取当前脚本的路径
+script_dir = os.path.dirname(sys.argv[0])
+image_path = os.path.join(script_dir, "background_image.png")
+
+root = tk.Tk()
+root.title("校园网自动连接程序v3.0")
+root.geometry("700x500")
+
+# 设置窗口背景
+background_image = tk.PhotoImage(file=image_path)
+background_label = tk.Label(root, image=background_image)
+background_label.place(relwidth=1, relheight=1)
+
+
+# 创建连接按钮
+connect_button = tk.Button(root, text="连接校园网", command=on_connect_button_click, bg="gray", fg="white",
+                           font=("Arial", 12))
+connect_button.place(relx=0.5, rely=0.4, anchor="center", width=150, height=40)
+
+# 创建退出按钮
+exit_button = tk.Button(root, text="退出", command=on_exit_button_click, bg="gray", fg="white", font=("Arial", 12))
+exit_button.place(relx=0.5, rely=0.6, anchor="center", width=150, height=40)
+
+root.mainloop()
